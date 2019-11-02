@@ -1,0 +1,120 @@
+<% include header.ejs %>
+<body>
+     <div class="layui-bg-blue">
+        <div class="layui-header layui-main">
+            <ul class="layui-nav layui-bg-blue">
+                <li clas="layui-nav-item layui-nav-this"><a href='/'>任务大厅</a></li>
+            </ul>
+            <% if(login){ %>
+            <ul class="layui-nav layui-bg-blue layui-layout-right">
+                <li class="layui-nav-item">当前用户：<%= user.username %></li>
+
+                   <% if(user.level>=10) { %>
+                   <li class="layui-nav-item"><a href='/admin/task/add'>后台管理</a></li>
+                   <% } %>
+                
+                <li class="layui-nav-item"><a href='/login'>退出</a></li>
+            </ul>
+            <% } else { %>
+                <ul class="layui-nav layui-bg-blue layui-layout-right">
+                    <li class="layui-nav-item"><a href='/login'>登录</a></li>
+                    <li class="layui-nav-item"><a href='/reg'>注册</a></li>
+                </ul>
+            <% } %>
+        </div>
+     </div>   
+           
+     <div id="btns">
+         <button class="layui-btn layui-btn-normal" data-dachui = "all">全部任务</button>
+         <button class="layui-btn layui-btn-normal" data-dachui="can">可接取任务</button>
+         <button class="layui-btn layui-btn-normal" data-dachui="notcan">不可接取任务</button>
+
+        <div style="float:right">
+            <% if(login) { %>
+                <% if((user.level)>=10) { %>
+                    <button class="layui-btn layui-btn-normal" data-dachui = "my">我的发布</button>
+                <% } %>
+                <button class="layui-btn layui-btn-normal" data-dachui="a">正在进行</button>
+                <button class="layui-btn layui-btn-normal" data-dachui="b">已完成</button>
+            <% } %>
+        </div>
+        </div>
+
+     <table id="demo" lay-filter="demo"></table>
+
+    <script type="text/html" id="xq">
+        <a class="layui-btn layui-btn-normal" lay-event="aa">查看详情</a>
+    </script>
+
+    <script>
+        //注意：导航 依赖 element 模块，否则无法进行功能性操作
+        layui.use(['table','element'], function(){
+            var table = layui.table;
+            var element = layui.element;
+            var $ = layui.$;
+            
+            //第一个实例
+            table.render({
+                elem: '#demo'
+                ,method:'post'
+                ,url: '/api/task/all' //数据接口
+                ,page: true //开启分页
+                ,cols: [[ //表头
+                {field: 'title', title: '标题'},
+                {field: 'time',title: '发布时间',templet:function(d){
+                    return new Date(d.time).toLocaleString()
+                }},
+                {toolbar:'#xq'}
+                ]]
+            });
+            
+            table.on('tool(demo)',function(obj) {
+                //console.log(obj);
+                location.href = "/xq/"+ obj.data._id
+                
+            })
+
+            var m = {
+                all:function(){
+                    table.reload('demo',{
+                        url:"/api/task/all"
+                    })
+                },
+                can:function(){
+                    table.reload('demo',{
+                        url:'/api/task/can'
+                    }
+                    )
+                },
+                notcan:function(){
+                    table.reload('demo',{
+                        url:"/api/task/notcan"
+                    })
+                },
+                my:function(){
+                    table.reload('demo',{
+                        url:"/api/task/my"
+                    })
+                },
+                a:function(){
+                    table.reload('demo',{
+                        url:"/api/task/a"
+                    })
+                },
+                b:function(){
+                    table.reload('demo',{
+                        url:"/api/task/b"
+                    })
+                }
+            }
+
+            $('#btns .layui-btn').on('click',function() {
+                // console.log(this.dataset.dachui);
+                //layer.alert("1")
+                m[this.dataset.dachui]()
+            })
+
+            });
+    </script>
+</body>
+</html>

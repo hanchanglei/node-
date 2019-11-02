@@ -1,0 +1,142 @@
+<% include header.ejs %>
+<body>
+    <div class="layui-bg-blue">
+       <div class="layui-header layui-main">
+           <ul class="layui-nav layui-bg-blue">
+               <li clas="layui-nav-item layui-nav-this"><a href='/'>任务大厅</a></li>
+           </ul>
+           <% if(login){ %>
+           <ul class="layui-nav layui-bg-blue layui-layout-right">
+               <li class="layui-nav-item">当前用户：<%= user.username %></li>
+
+                  <% if(user.level>=10) { %>
+                  <li class="layui-nav-item"><a href='/admin/task/add'>后台管理</a></li>
+                  <% } %>
+               
+               <li class="layui-nav-item"><a href='/reg'>退出</a></li>
+           </ul>
+           <% } else { %>
+               <ul class="layui-nav layui-bg-blue layui-layout-right">
+                   <li class="layui-nav-item"><a href='/login'>登录</a></li>
+                   <li class="layui-nav-item"><a href='/reg'>注册</a></li>
+               </ul>
+           <% } %>
+       </div>
+    </div>
+    
+    <div class="layui-main">
+        <h1><%- data.title %></h1>
+
+        <div class="layui-text layui-row">
+            <div class="layui-col-mdl">
+              发布人:  <%- data.author.username %>
+            </div>
+            <div>发布时间：<%- new Date(data.time).toLocaleString() %></div>
+        </div>
+    </div>
+
+    <fieldset class="layui-elem-field layui-field-title">
+        <legend>任务详情</legend>
+    </fieldset>
+
+    <div>
+        <%- data.content %>
+    </div>
+
+    <div>
+        以接取人数：<%- data.receiver.length %>
+        最高接取人数:<%- data.num %> 人
+        任务限时: <%- data.expiration %>
+        任务难度: <div id = "expiration"></div>
+    </div>
+
+    <div>
+        <% if (data.can || !(a === -1)) { %>
+            <button class="layui-btn layui-btn-normal laydate-disabled">不能接取</button>
+        <% } else { %>
+            <button id="liji" class="layui-btn layui-btn-normal">立即接取</button>
+        <% } %>
+    </div>
+
+    <div>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>接取人</legend>
+         </fieldset> 
+         <div>
+             <% for(var i=0;i<data.receiver.length;i++){ %>
+                 <%- `${i+1}.${data.receiver[i].username}` %>
+             <% } %>
+         </div>
+         <fieldset class="layui-elem-field layui-field-title">
+            <legend>完成详情</legend>
+         </fieldset> 
+
+         <% for(var i=0;i<data.receiver.length;i++){ %>
+            <div class="layui-card">
+                <div class="layui-card-header">用户名：<%- data.receiver[i].username %></div>
+                <% if(data.receiver[i].finmsg){ %>
+                    <div class="layui-card-body"><%- data.receiver[i].msg %></div>
+                <% } else{ %>
+                    <% if(user._id && user._id == data.receiver[i]._id){ %>
+                       <form class="layui-form" action="">
+                            <input name="id" type="text" hidden value="<%- data.receiver[i]._id %>">
+                            <input name="index" hidden value="<%- i %>">
+                            <textarea name="msg" id="demo<%- i %>" style="display: none;"></textarea>
+                            <button class="layui-btn" lay-submit lay-filter = "formDemo">立即提交</button>
+                       </form>
+                    <% } %>
+                <% } %>
+            </div>
+        <% } %>
+
+    </div>
+
+
+    <script>
+        layui.use(['rate','layedit','form'],function() {
+            var rate = layui.rate;
+            var $ = layui.$;
+            var layedit = layui.layedit;
+            var form = layui.form;
+
+            var edit = {}
+
+            form.on('submit(formDemo)',function(data) {
+                //console.log(JSON.stringify(data.field));
+                
+                // layer.msg(JSON.stringify(data.field))
+                var da = data.field;
+                da.msg = layedit.getContent(edit['index'+data.field.index])
+                da.taskid = location.pathname;
+                $.ajax({
+                    url:"/task/finmsg",
+                    method:"post",
+                    data:da
+                })
+                return false;
+            })
+
+            rate.render({
+                elem:'#expiration',
+                value:<%- data.difficulty %>,
+                readonly:true
+            })
+
+            <% for(var i=0;i<data.receiver.length;i++){ %>
+                var index<%-i%> =layedit.build('demo<%- i %>'); //建立编辑器
+            <% } %>
+        
+           
+
+            $("#liji").on('click',function() {
+            
+                $.ajax({
+                    url:location.pathname,
+                    method:"post"
+                })
+           
+            })
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "actul",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "connect-mongo": "^3.0.0",
+    "crypto": "^1.0.1",
+    "ejs": "2.6.1",
+    "express": "4.16.4",
+    "express-session": "^1.16.2",
+    "mongoose": "5.4.2",
+    "multer": "^1.4.2"
+  }
+}

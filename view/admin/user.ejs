@@ -1,0 +1,137 @@
+<% include ../header.ejs %>
+        <body class="layui-layout-body">
+                <div class="layui-layout layui-layout-admin">
+                  
+                  <% include ./nav.ejs %>
+                  
+                  <div class="layui-body">
+                    <!-- 内容主体区域 -->
+                    <div style="padding: 15px;">
+                        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px">
+                            <legend>用户管理</legend>
+                            <table class="layui-hide" id="test" lay-filter="demo"></table>
+                        </fieldset>
+                    </div>
+                  </div>
+                  
+                  <script type="text/html" id="barDemo">
+                    <a class="layui-btn layui-btn-xs" lay-event="edit">更改级别</a>
+                    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除用户</a>
+                  </script>
+
+
+                  <div class="layui-footer">
+                    <!-- 底部固定区域 -->
+                    © layui.com - 底部固定区域
+                  </div>
+                </div>
+                <script src="../src/layui.js"></script>
+                <script>
+                //JavaScript代码区域
+                layui.use(['element','table','form'], function(){
+                  var element = layui.element;
+                  var table = layui.table;
+                  var form = layui.form;  
+
+                    table.render({
+                        elem: '#test'
+                        ,url:'/admin/user'
+                        ,method:'post'
+                        ,cols: [[
+                        {field:'username', width:80, title: '用户名'},
+                        {field:'level',width:80,title:'用户级别'}
+                        ,{field:'used',width:400,title:'账号是否可用',templet:function(d){
+                          //console.log(d);
+                          
+                          // return `<input type="checkbox" name="used" value="{{d.id}} lay-skin="switch" lay-text="可用|不可用" lay-filter="usedDemo" {{d.used == true?'\'checked\':\'\'}}>`
+                          return `<input type="checkbox" name="used" lay-skin="switch" value="${d._id}" lay-text="可用|不可用" lay-filter="usedDemo" ${d.used == true?"checked":""}>`
+                          
+                        }},
+                        {field:'tool',toolbar: "#barDemo"}
+                        ]]
+                        ,page: true
+                    });
+
+                      //监听 删除用户点击事件
+                      table.on('tool(demo)',function(obj) {
+                        //console.log(obj);
+                        if( obj.event ==='del' ){
+                            //console.log('del');
+                            //eg1
+                            layer.confirm('是否删除?', {icon: 3, title:'提示'}, function(index){
+                              layui.$.ajax({
+                                url:'/admin/user/del',
+                                method:'post',
+                                data:{
+                                  _id:obj.data._id
+                                },
+                                success(){
+                                  //obj.del();//删除本行数据  也可以使用location.reload()  重新刷新一下页面 写下面了 写这不管用
+                                  //location.reload()
+
+                                }
+                            })
+                            //obj.del()
+                            location.reload()
+                              layer.close(index);
+                            });
+                            // layui.$.ajax({
+                            //   url:'/admin/user/del',
+                            //   method:'post',
+                            //   data:{
+                            //     _id:obj.data._id
+                            //   },
+                            //   success:function(){
+
+                            //   }
+                            // })
+                        }else if( obj.event === 'edit' ){
+
+                          layer.prompt(function(value, index, elem){
+                            //alert(value); //得到value
+                            
+                            layui.$.ajax({
+                              url:"/admin/user/adit",
+                              method:'post',
+                              data:{
+                                _id:obj.data._id,
+                                level:value
+                              },
+                              success:function(){
+
+                              }
+                         })
+                            layer.close(index);
+                          });
+
+                        
+                        
+                        }
+                      })
+
+                      //监听可用不可用点击按钮事件
+                    form.on('switch(usedDemo)',function(obj) {
+                        //console.log(this.value,obj.elem.checked);
+                        layui.$.ajax({
+                          url:'/admin/user/reuserlevel',
+                          method:'post',
+                          data:{
+                            user_id: this.value,
+                            used:obj.elem.checked
+                          },
+                          success:function(res){
+                            res.code === 0 && layer.tips(res.data,obj.othis);
+                            res.code === 1 && layer.alert(res.data,function(params) {
+                              window.location.reload()
+                            })
+                          }
+                        })
+                     })
+                });
+
+                
+                </script>
+                </body>
+                </html>
+                      
+</html>
